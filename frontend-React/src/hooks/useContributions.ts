@@ -5,12 +5,9 @@ import type {
   TriggerContributionRequest,
   ApiError,
 } from '@/types';
+import { QUERY_KEYS } from './keys';
 
-export const CONTRIBUTION_QUERY_KEYS = {
-  all: ['contributions'] as const,
-  byCycle: (cycleId: string) => ['contributions', 'cycle', cycleId] as const,
-  detail: (id: string) => ['contributions', 'detail', id] as const,
-};
+export const CONTRIBUTION_QUERY_KEYS = QUERY_KEYS.contributions;
 
 /**
  * Hook to retrieve all contribution records for a specific cycle.
@@ -18,7 +15,7 @@ export const CONTRIBUTION_QUERY_KEYS = {
  */
 export function useContributions(cycleId?: string) {
   return useQuery<ContributionStatus[], ApiError>({
-    queryKey: CONTRIBUTION_QUERY_KEYS.byCycle(cycleId || ''),
+    queryKey: QUERY_KEYS.contributions.byCycle(cycleId || ''),
     queryFn: () => {
       if (!cycleId) {
         throw new Error('Cycle ID is required to fetch contributions');
@@ -35,7 +32,7 @@ export function useContributions(cycleId?: string) {
  */
 export function useContributionStatus(contributionId?: string) {
   return useQuery<ContributionStatus, ApiError>({
-    queryKey: CONTRIBUTION_QUERY_KEYS.detail(contributionId || ''),
+    queryKey: QUERY_KEYS.contributions.detail(contributionId || ''),
     queryFn: () => {
       if (!contributionId) {
         throw new Error('Contribution ID is required to fetch status');
@@ -56,12 +53,18 @@ export function useTriggerContribution() {
   return useMutation<ContributionStatus, ApiError, TriggerContributionRequest>({
     mutationFn: (request: TriggerContributionRequest) => triggerContribution(request),
     onSuccess: (result, variables) => {
-      // Invalidate cycle contributions to refresh live state from backend
-      queryClient.invalidateQueries({
-        queryKey: CONTRIBUTION_QUERY_KEYS.byCycle(variables.cycleId),
-      });
-      // Invalidate individual status
-      queryClient.setQueryData(CONTRIBUTION_QUERY_KEYS.detail(result.id), result);
+      // 1. Invalidate all contributions queries for cycle & global collection
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.contributions.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.contributions.byCycle(variables.cycleId) });
+      
+      // 2. Invalidate group and history data so totals reflect server state
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.groups.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.history.all });
+
+      // 3. Set query data for specific contribution detail
+      if (result && result.id) {
+        queryClient.setQueryData(QUERY_KEYS.contributions.detail(result.id), result);
+      }
     },
   });
 }

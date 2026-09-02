@@ -9,13 +9,10 @@ export * from './ui/HexAvatar';
 export * from './ui/HexBadge';
 export * from './ui/Card';
 
-// Group & Ledger Feature Components
-export * from './group/LedgerTable';
-export * from './group/ContributionStatusBadge';
-export * from './group/PayoutRotationBanner';
-
-// Demo & Testing Components
-export * from './demo/DemoTriggerPanel';
+// Feature Components
+export * from './groups/LedgerTable';
+export * from './groups/PayoutRotationBanner';
+export * from './contributions/ContributionStatusBadge';
 
 // Common State Components
 export * from './common/LoadingSpinner';

@@ -1,11 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createGroup, getGroup, joinGroup, joinGroupByInviteCode } from '@/api/groups';
 import type { CreateGroupRequest, GroupResponse, JoinGroupRequest, ApiError } from '@/types';
+import { QUERY_KEYS } from './keys';
 
-export const GROUP_QUERY_KEYS = {
-  all: ['groups'] as const,
-  detail: (id: string) => ['groups', id] as const,
-};
+export const GROUP_QUERY_KEYS = QUERY_KEYS.groups;
 
 /**
  * Hook to fetch details for a single Stokvel group by ID.
@@ -13,7 +11,7 @@ export const GROUP_QUERY_KEYS = {
  */
 export function useGroup(groupId?: string) {
   return useQuery<GroupResponse, ApiError>({
-    queryKey: GROUP_QUERY_KEYS.detail(groupId || ''),
+    queryKey: QUERY_KEYS.groups.detail(groupId || ''),
     queryFn: () => {
       if (!groupId) {
         throw new Error('Group ID is required to fetch group details');
@@ -34,9 +32,9 @@ export function useCreateGroup() {
   return useMutation<GroupResponse, ApiError, CreateGroupRequest>({
     mutationFn: (request: CreateGroupRequest) => createGroup(request),
     onSuccess: (newGroup) => {
-      // Prime cache for the newly created group
-      queryClient.setQueryData(GROUP_QUERY_KEYS.detail(newGroup.id), newGroup);
-      queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.all });
+      // Prime cache for the newly created group and invalidate group collections
+      queryClient.setQueryData(QUERY_KEYS.groups.detail(newGroup.id), newGroup);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.groups.all });
     },
   });
 }
@@ -54,9 +52,11 @@ export function useJoinGroup() {
     { groupId: string; request: JoinGroupRequest }
   >({
     mutationFn: ({ groupId, request }) => joinGroup(groupId, request),
-    onSuccess: (updatedGroup) => {
-      queryClient.setQueryData(GROUP_QUERY_KEYS.detail(updatedGroup.id), updatedGroup);
-      queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.all });
+    onSuccess: (updatedGroup, variables) => {
+      queryClient.setQueryData(QUERY_KEYS.groups.detail(variables.groupId), updatedGroup);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.groups.detail(variables.groupId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.groups.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.members.byGroup(variables.groupId) });
     },
   });
 }
@@ -71,8 +71,10 @@ export function useJoinGroupByInviteCode() {
   return useMutation<GroupResponse, ApiError, JoinGroupRequest>({
     mutationFn: (request: JoinGroupRequest) => joinGroupByInviteCode(request),
     onSuccess: (joinedGroup) => {
-      queryClient.setQueryData(GROUP_QUERY_KEYS.detail(joinedGroup.id), joinedGroup);
-      queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.all });
+      queryClient.setQueryData(QUERY_KEYS.groups.detail(joinedGroup.id), joinedGroup);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.groups.detail(joinedGroup.id) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.groups.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.members.byGroup(joinedGroup.id) });
     },
   });
 }

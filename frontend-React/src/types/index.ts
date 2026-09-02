@@ -21,33 +21,51 @@ export interface UserProfile {
 
 export interface CreateGroupRequest {
   name: string;
+  description?: string;
+  groupType?: 'ROTATING' | 'SAVINGS' | string;
   contributionAmount: number;
-  frequency: 'weekly' | 'monthly';
-  startDate: string;
+  contributionFrequency?: 'WEEKLY' | 'MONTHLY' | string;
+  frequency?: 'weekly' | 'monthly' | string;
+  maxMembers?: number;
+  startDate?: string;
+  creatorMemberId?: string;
 }
 
 export interface MemberSummary {
   id: string;
+  memberId?: string;
   displayName: string;
+  fullName?: string;
   msisdn: string;
-  joinOrder: number;
+  phoneNumber?: string;
+  joinOrder?: number;
+  payoutOrder?: number;
+  role?: string;
+  status?: string;
 }
 
 export interface GroupResponse {
   id: string;
   name: string;
+  description?: string;
+  groupType?: string;
   contributionAmount: number;
-  frequency: 'weekly' | 'monthly';
-  startDate: string;
-  inviteCode: string;
-  createdAt: string;
+  contributionFrequency?: string;
+  frequency?: 'weekly' | 'monthly' | string;
+  maxMembers?: number;
+  currentMemberCount?: number;
+  startDate?: string;
+  inviteCode?: string;
+  createdAt?: string;
   members: MemberSummary[];
 }
 
 export interface JoinGroupRequest {
-  inviteCode: string;
-  msisdn: string;
-  displayName: string;
+  inviteCode?: string;
+  memberId?: string;
+  msisdn?: string;
+  displayName?: string;
+  role?: string;
 }
 
 // ==========================================
@@ -56,25 +74,44 @@ export interface JoinGroupRequest {
 
 export interface ContributionStatus {
   id: string;
+  cycleId?: string;
   memberId: string;
   displayName: string;
+  memberName?: string;
   amount: number;
-  status: 'pending' | 'paid' | 'failed';
+  status: 'pending' | 'paid' | 'failed' | 'PENDING' | 'SUCCESSFUL' | 'COMPLETED' | 'FAILED' | string;
   paidAt: string | null;
   momoReference: string | null;
+  paymentReference?: string | null;
 }
 
 export interface TriggerContributionRequest {
   cycleId: string;
   memberId: string;
+  amount?: number;
+  paymentMethod?: 'MOMO' | 'EFT' | 'CASH' | 'CARD' | string;
+  paymentReference?: string;
+}
+
+export interface CreatePayoutRequest {
+  cycleId: string;
+  memberId: string;
+  amount: number;
+  payoutMethod?: 'MOMO' | 'BANK_TRANSFER' | 'CASH' | string;
+  scheduledDate?: string;
+  payoutReference?: string;
 }
 
 export interface TriggerPayoutResponse {
   id: string;
-  recipientMemberId: string;
-  recipientName: string;
+  cycleId?: string;
+  recipientMemberId?: string;
+  memberId?: string;
+  recipientName?: string;
+  memberName?: string;
   amount: number;
-  status: 'pending' | 'paid' | 'failed';
+  status: 'pending' | 'paid' | 'failed' | 'PENDING' | 'SUCCESSFUL' | 'COMPLETED' | 'FAILED' | string;
+  paidAt?: string | null;
 }
 
 // ==========================================
@@ -86,7 +123,7 @@ export interface CycleHistory {
   dueDate: string;
   totalContributed: number;
   payoutRecipient: string;
-  status: 'open' | 'closed';
+  status: 'open' | 'closed' | 'OPEN' | 'CLOSED' | 'active' | 'completed' | string;
 }
 
 // ==========================================

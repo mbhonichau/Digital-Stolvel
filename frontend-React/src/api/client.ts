@@ -31,9 +31,20 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Format errors consistently for the application
+// Response Interceptor: Format errors and unwrap ApiResponse envelopes consistently
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Unwrap Spring Boot ApiResponse<T> wrapper ({ success: true, message: "...", data: T })
+    if (
+      response.data &&
+      typeof response.data === 'object' &&
+      'data' in response.data &&
+      ('success' in response.data || 'message' in response.data)
+    ) {
+      return { ...response, data: response.data.data };
+    }
+    return response;
+  },
   (error: AxiosError<{ message?: string; error?: string; code?: string; details?: Record<string, string[]> }>) => {
     const formattedError: ApiError = {
       message:

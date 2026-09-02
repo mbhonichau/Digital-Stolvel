@@ -13,7 +13,7 @@ export const getContributions = async (
   id: string
 ): Promise<ContributionStatus[]> => {
   const response = await apiClient.get<ContributionStatus[]>(`/cycles/${id}/contributions`);
-  return response.data;
+  return Array.isArray(response.data) ? response.data : [];
 };
 
 /**
@@ -23,7 +23,14 @@ export const getContributions = async (
 export const triggerContribution = async (
   request: TriggerContributionRequest
 ): Promise<ContributionStatus> => {
-  const response = await apiClient.post<ContributionStatus>('/contributions', request);
+  const payload = {
+    cycleId: request.cycleId,
+    memberId: request.memberId,
+    amount: request.amount || 100,
+    paymentMethod: request.paymentMethod || 'MOMO',
+    paymentReference: request.paymentReference || `MOMO-${Date.now()}`,
+  };
+  const response = await apiClient.post<ContributionStatus>('/contributions', payload);
   return response.data;
 };
 
@@ -40,19 +47,13 @@ export const getContributionStatus = async (
 
 /**
  * Retrieves cycle contribution and payout history for a group.
- * Endpoint: GET /groups/{id}/history (with fallback to /groups/{id}/cycles)
+ * Endpoint: GET /groups/{id}/history
  */
 export const getGroupCycleHistory = async (
   id: string
 ): Promise<CycleHistory[]> => {
-  try {
-    const response = await apiClient.get<CycleHistory[]>(`/groups/${id}/history`);
-    return response.data;
-  } catch (err) {
-    // If backend uses /cycles route instead of /history
-    const response = await apiClient.get<CycleHistory[]>(`/groups/${id}/cycles`);
-    return response.data;
-  }
+  const response = await apiClient.get<CycleHistory[]>(`/groups/${id}/history`);
+  return Array.isArray(response.data) ? response.data : [];
 };
 
 /**

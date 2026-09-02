@@ -2,12 +2,12 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import {
-  Landing,
-  CreateGroup,
-  InviteShare,
-  JoinGroup,
-  GroupDashboard,
-  GroupHistory,
+  LandingPage,
+  CreateGroupPage,
+  InvitePage,
+  JoinGroupPage,
+  DashboardPage,
+  HistoryPage,
   ContributionsPage,
   HomePage,
   NotFoundPage,
@@ -17,21 +17,21 @@ export const App: React.FC = () => {
   return (
     <AppShell>
       <Routes>
-        {/* Phase 18 Canonical Routes */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/create" element={<CreateGroup />} />
-        <Route path="/invite/:groupId" element={<InviteShare />} />
-        <Route path="/join" element={<JoinGroup />} />
-        <Route path="/group/:groupId" element={<GroupDashboard />} />
-        <Route path="/group/:groupId/history" element={<GroupHistory />} />
+        {/* Canonical Target Production Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/create" element={<CreateGroupPage />} />
+        <Route path="/invite/:groupId" element={<InvitePage />} />
+        <Route path="/join" element={<JoinGroupPage />} />
+        <Route path="/group/:groupId" element={<DashboardPage />} />
+        <Route path="/group/:groupId/history" element={<HistoryPage />} />
 
-        {/* Supporting Mini App Routes */}
+        {/* Supporting Mini App Alias Routes */}
         <Route path="/contributions" element={<ContributionsPage />} />
-        <Route path="/history" element={<GroupHistory />} />
-        <Route path="/groups" element={<GroupDashboard />} />
-        <Route path="/groups/:id" element={<GroupDashboard />} />
-        <Route path="/groups/:id/share" element={<InviteShare />} />
-        <Route path="/groups/:id/history" element={<GroupHistory />} />
+        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/groups" element={<DashboardPage />} />
+        <Route path="/groups/:id" element={<DashboardPage />} />
+        <Route path="/groups/:id/share" element={<InvitePage />} />
+        <Route path="/groups/:id/history" element={<HistoryPage />} />
         <Route path="/status" element={<HomePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

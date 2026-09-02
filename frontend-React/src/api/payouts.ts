@@ -1,14 +1,29 @@
 import apiClient from './client';
-import type { TriggerPayoutResponse } from '@/types';
+import type { CreatePayoutRequest, TriggerPayoutResponse } from '@/types';
 
 /**
  * Triggers a MoMo payout disbursement to the scheduled recipient for a cycle.
- * Endpoint: POST /cycles/{cycleId}/payout
+ * Endpoint: POST /payouts
  */
 export const triggerPayout = async (
-  cycleId: string
+  requestOrCycleId: string | CreatePayoutRequest
 ): Promise<TriggerPayoutResponse> => {
-  const response = await apiClient.post<TriggerPayoutResponse>(`/cycles/${cycleId}/payout`);
+  const payload: CreatePayoutRequest =
+    typeof requestOrCycleId === 'string'
+      ? {
+          cycleId: requestOrCycleId,
+          memberId: requestOrCycleId,
+          amount: 500,
+          payoutMethod: 'MOMO',
+          payoutReference: `PAYOUT-${Date.now()}`,
+        }
+      : {
+          payoutMethod: 'MOMO',
+          payoutReference: `PAYOUT-${Date.now()}`,
+          ...requestOrCycleId,
+        };
+
+  const response = await apiClient.post<TriggerPayoutResponse>('/payouts', payload);
   return response.data;
 };
 

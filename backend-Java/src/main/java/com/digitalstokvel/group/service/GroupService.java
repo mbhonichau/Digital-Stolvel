@@ -2,7 +2,13 @@ package com.digitalstokvel.group.service;
 
 import com.digitalstokvel.common.exception.BusinessException;
 import com.digitalstokvel.common.exception.ResourceNotFoundException;
+import com.digitalstokvel.contribution.entity.Contribution;
+import com.digitalstokvel.contribution.entity.ContributionStatus;
+import com.digitalstokvel.contribution.repository.ContributionRepository;
+import com.digitalstokvel.cycle.entity.Cycle;
+import com.digitalstokvel.cycle.repository.CycleRepository;
 import com.digitalstokvel.group.dto.CreateGroupRequest;
+import com.digitalstokvel.group.dto.GroupHistoryResponse;
 import com.digitalstokvel.group.dto.GroupMemberResponse;
 import com.digitalstokvel.group.dto.GroupResponse;
 import com.digitalstokvel.group.dto.JoinGroupRequest;
@@ -16,12 +22,17 @@ import com.digitalstokvel.group.repository.GroupMemberRepository;
 import com.digitalstokvel.group.repository.GroupRepository;
 import com.digitalstokvel.member.entity.Member;
 import com.digitalstokvel.member.repository.MemberRepository;
+import com.digitalstokvel.payout.entity.Payout;
+import com.digitalstokvel.payout.repository.PayoutRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,13 +45,22 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final MemberRepository memberRepository;
+    private final CycleRepository cycleRepository;
+    private final ContributionRepository contributionRepository;
+    private final PayoutRepository payoutRepository;
 
     public GroupService(GroupRepository groupRepository,
                         GroupMemberRepository groupMemberRepository,
-                        MemberRepository memberRepository) {
+                        MemberRepository memberRepository,
+                        CycleRepository cycleRepository,
+                        ContributionRepository contributionRepository,
+                        PayoutRepository payoutRepository) {
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.memberRepository = memberRepository;
+        this.cycleRepository = cycleRepository;
+        this.contributionRepository = contributionRepository;
+        this.payoutRepository = payoutRepository;
     }
 
     public GroupResponse createGroup(CreateGroupRequest request) {
@@ -131,5 +151,55 @@ public class GroupService {
                 member.getId(), group.getId(), role, payoutOrder);
 
         return GroupMemberResponse.fromEntity(savedMember);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GroupHistoryResponse> getGroupHistory(UUID groupId) {
+        log.info("Fetching history for group: {}", groupId);
+
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + groupId));
+
+        List<Cycle> cycles = cycleRepository.findByGroupId(groupId);
+        List<GroupMember> groupMembers = groupMemberRepository.findByGroupId(groupId);
+
+        List<GroupHistoryResponse> history = new ArrayList<>();
+
+        for (Cycle cycle : cycles) {
+            List<Contribution> contributions = contributionRepository.findByCycleId(cycle.getId());
+            BigDecimal totalContributed = contributions.stream()
+                    .filter(c -> c.getStatus() == ContributionStatus.SUCCESSFUL)
+                    .map(Contribution::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            if (totalContributed.compareTo(BigDecimal.ZERO) == 0) {
+                totalContributed = cycle.getTargetAmount() != null ? cycle.getTargetAmount() : group.getContributionAmount();
+            }
+
+            String recipientName = "Member #" + cycle.getCycleNumber();
+            List<Payout> payouts = payoutRepository.findByCycleId(cycle.getId());
+            if (!payouts.isEmpty() && payouts.get(0).getMember() != null) {
+                recipientName = payouts.get(0).getMember().getFullName();
+            } else if (!groupMembers.isEmpty()) {
+                int memberIndex = (cycle.getCycleNumber() - 1) % groupMembers.size();
+                GroupMember member = groupMembers.get(memberIndex);
+                if (member.getMember() != null) {
+                    recipientName = member.getMember().getFullName();
+                }
+            }
+
+            String status = cycle.getStatus() != null ? cycle.getStatus().name().toLowerCase() : "open";
+
+            GroupHistoryResponse response = new GroupHistoryResponse(
+                    cycle.getCycleNumber(),
+                    cycle.getEndDate(),
+                    totalContributed,
+                    recipientName,
+                    status
+            );
+            history.add(response);
+        }
+
+        return history;
     }
 }

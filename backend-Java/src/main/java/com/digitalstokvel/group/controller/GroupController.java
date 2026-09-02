@@ -2,6 +2,7 @@ package com.digitalstokvel.group.controller;
 
 import com.digitalstokvel.common.dto.ApiResponse;
 import com.digitalstokvel.group.dto.CreateGroupRequest;
+import com.digitalstokvel.group.dto.GroupHistoryResponse;
 import com.digitalstokvel.group.dto.GroupMemberResponse;
 import com.digitalstokvel.group.dto.GroupResponse;
 import com.digitalstokvel.group.dto.JoinGroupRequest;
@@ -54,5 +55,11 @@ public class GroupController {
         GroupMemberResponse response = groupService.joinGroup(id, request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Successfully joined group", response));
+    }
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<ApiResponse<List<GroupHistoryResponse>>> getGroupHistory(@PathVariable UUID id) {
+        List<GroupHistoryResponse> response = groupService.getGroupHistory(id);
+        return ResponseEntity.ok(ApiResponse.ok("Group history retrieved successfully", response));
     }
 }
