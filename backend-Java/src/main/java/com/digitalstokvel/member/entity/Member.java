@@ -23,6 +23,9 @@ public class Member extends BaseEntity {
     @Column(name = "email", unique = true, length = 150)
     private String email;
 
+    @Column(name = "display_name", length = 150)
+    private String displayName;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "kyc_status", nullable = false, length = 50)
     private KycStatus kycStatus = KycStatus.NOT_VERIFIED;
@@ -39,6 +42,16 @@ public class Member extends BaseEntity {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.displayName = firstName + (lastName != null && !lastName.isBlank() ? " " + lastName : "");
+        this.kycStatus = KycStatus.NOT_VERIFIED;
+        this.status = MemberStatus.ACTIVE;
+    }
+
+    public Member(String phoneNumber, String displayName) {
+        this.phoneNumber = phoneNumber;
+        this.displayName = displayName;
+        this.firstName = displayName;
+        this.lastName = "";
         this.kycStatus = KycStatus.NOT_VERIFIED;
         this.status = MemberStatus.ACTIVE;
     }
@@ -73,6 +86,14 @@ public class Member extends BaseEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getDisplayName() {
+        return displayName != null ? displayName : firstName + (lastName != null && !lastName.isBlank() ? " " + lastName : "");
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public KycStatus getKycStatus() {

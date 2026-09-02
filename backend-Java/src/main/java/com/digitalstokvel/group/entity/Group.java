@@ -8,6 +8,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "\"groups\"")
@@ -37,6 +39,12 @@ public class Group extends BaseEntity {
     @Column(name = "status", nullable = false, length = 50)
     private GroupStatus status = GroupStatus.ACTIVE;
 
+    @Column(name = "invite_code", nullable = false, unique = true, length = 20)
+    private String inviteCode;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
     public Group() {
     }
 
@@ -50,6 +58,11 @@ public class Group extends BaseEntity {
         this.contributionFrequency = contributionFrequency;
         this.maxMembers = maxMembers;
         this.status = GroupStatus.ACTIVE;
+        this.inviteCode = generateInviteCode();
+    }
+
+    public static String generateInviteCode() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
     }
 
     public String getName() {
@@ -106,5 +119,21 @@ public class Group extends BaseEntity {
 
     public void setStatus(GroupStatus status) {
         this.status = status;
+    }
+
+    public String getInviteCode() {
+        return inviteCode;
+    }
+
+    public void setInviteCode(String inviteCode) {
+        this.inviteCode = inviteCode;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
     }
 }
