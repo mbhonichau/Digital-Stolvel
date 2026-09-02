@@ -55,6 +55,14 @@ logging:
     org.flywaydb: INFO
     org.hibernate.SQL: INFO
 
+momo:
+  api:
+    base-url: ${MOMO_BASE_URL:https://sandbox.momodeveloper.mtn.com}
+    target-environment: ${MOMO_TARGET_ENVIRONMENT:mtnsouthafrica}
+    user: ${MOMO_API_USER:test-momo-user}
+    key: ${MOMO_API_KEY:test-momo-key}
+    subscription-key: ${MOMO_SUBSCRIPTION_KEY:test-subscription-key}
+
 ---
 # PostgreSQL Production / Container profile
 spring:

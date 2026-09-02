@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/public/**").permitAll()
                         // Mobile money webhook / callback endpoints
                         .requestMatchers("/api/v1/momo/callback/**").permitAll()
+                        .requestMatchers("/webhooks/**").permitAll()
+                        .requestMatchers("/api/v1/webhooks/**").permitAll()
                         // H2 Console if enabled in dev
                         .requestMatchers("/h2-console/**").permitAll()
                         // For Phase 1 initial foundation, permit test endpoints or require auth
