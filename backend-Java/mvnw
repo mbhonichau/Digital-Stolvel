@@ -1,0 +1,18 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Maven Wrapper Shell Script for Digital Stokvel
+# ----------------------------------------------------------------------------
+
+MAVEN_VERSION="3.9.9"
+BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAVEN_DIR="$BASE_DIR/.mvn/apache-maven-$MAVEN_VERSION"
+MAVEN_CMD="$MAVEN_DIR/bin/mvn"
+
+if [ ! -x "$MAVEN_CMD" ]; then
+    echo "[INFO] Downloading Apache Maven $MAVEN_VERSION..."
+    mkdir -p "$BASE_DIR/.mvn"
+    curl -sSL "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$MAVEN_VERSION/apache-maven-$MAVEN_VERSION-bin.tar.gz" | tar -xz -C "$BASE_DIR/.mvn"
+    chmod +x "$MAVEN_CMD"
+fi
+
+exec "$MAVEN_CMD" "$@"
