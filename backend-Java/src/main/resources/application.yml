@@ -55,6 +55,18 @@ logging:
     org.flywaydb: INFO
     org.hibernate.SQL: INFO
 
+momo:
+  base-url: https://proxy.momoapi.mtn.com
+  target-environment: mtnsouthafrica
+  collection:
+    subscription-key: dbb663a2429e4d9ca84dbbcbe2bb59e6
+    api-user: c6aa9738-7e6b-4de5-ad8c-947fbdee032f
+    api-key: 07069f088b8c4e48ade327c18289609a
+  disbursement:
+    subscription-key: 5d9c941af2ed4afd95093161e6f9da93
+    api-user: c6aa9738-7e6b-4de5-ad8c-947fbdee032f
+    api-key: 07069f088b8c4e48ade327c18289609a
+
 ---
 # PostgreSQL Production / Container profile
 spring:

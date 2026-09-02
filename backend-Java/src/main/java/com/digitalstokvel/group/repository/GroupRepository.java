@@ -17,4 +17,6 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
     List<Group> findByGroupType(GroupType groupType);
 
     List<Group> findByNameContainingIgnoreCase(String name);
+
+    Optional<Group> findByInviteCode(String inviteCode);
 }

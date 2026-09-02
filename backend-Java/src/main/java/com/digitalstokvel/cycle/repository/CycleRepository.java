@@ -19,4 +19,6 @@ public interface CycleRepository extends JpaRepository<Cycle, UUID> {
     List<Cycle> findByGroupIdAndStatus(UUID groupId, CycleStatus status);
 
     List<Cycle> findByStatus(CycleStatus status);
+
+    List<Cycle> findByGroupIdOrderByCycleNumberAsc(UUID groupId);
 }
