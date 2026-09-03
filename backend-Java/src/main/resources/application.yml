@@ -5,6 +5,11 @@ spring:
   application:
     name: digital-stokvel-backend
 
+  # Load local development credentials from backend-Java/.env. Environment
+  # variables still take precedence, so deployment platforms need no change.
+  config:
+    import: optional:file:.env[.properties]
+
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
