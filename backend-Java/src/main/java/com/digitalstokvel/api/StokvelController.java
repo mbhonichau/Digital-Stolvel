@@ -24,6 +24,7 @@ public class StokvelController {
     @PostMapping("/groups")
     @ResponseStatus(HttpStatus.CREATED)
     public GroupResponse createGroup(@Valid @RequestBody CreateGroupRequest request) { return service.createGroup(request); }
+    @GetMapping("/groups") public List<GroupResponse> myGroups() { return service.myGroups(); }
     @GetMapping("/groups/{id}") public GroupResponse getGroup(@PathVariable UUID id) { return service.getGroup(id); }
     @GetMapping("/groups/{id}/cycles") public List<CycleResponse> cycles(@PathVariable UUID id) { return service.cycles(id); }
     @PostMapping("/groups/{id}/join") public GroupResponse join(@PathVariable UUID id, @Valid @RequestBody JoinGroupRequest request) { return service.join(id, request); }

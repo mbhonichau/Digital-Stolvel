@@ -21,4 +21,5 @@ public class AppUser extends BaseEntity {
     public String getDisplayName() { return displayName; }
     public String getPasswordHash() { return passwordHash; }
     public void setSession(String token, Instant expiresAt) { this.sessionToken = token; this.sessionExpiresAt = expiresAt; }
+    public void clearSession() { this.sessionToken = null; this.sessionExpiresAt = null; }
 }

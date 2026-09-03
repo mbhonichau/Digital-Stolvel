@@ -12,6 +12,12 @@ export const createGroup = async (
   return response.data;
 };
 
+/** Lists only groups the authenticated user belongs to. */
+export const getMyGroups = async (): Promise<GroupResponse[]> => {
+  const response = await apiClient.get<GroupResponse[]>('/groups');
+  return response.data;
+};
+
 /**
  * Retrieves details for a specific Stokvel group by ID.
  * Endpoint: GET /groups/{id}

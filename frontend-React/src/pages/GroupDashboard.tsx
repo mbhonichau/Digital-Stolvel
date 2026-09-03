@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAddGroupMember, useGroup, useContributions, useCycleHistory, useGroupCycles } from '@/hooks';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useAddGroupMember, useGroup, useMyGroups, useContributions, useCycleHistory, useGroupCycles } from '@/hooks';
 import { useUiStore } from '@/store';
 import {
   Card,
@@ -37,9 +37,17 @@ import type { CycleHistory } from '@/types';
 export const GroupDashboard: React.FC = () => {
   const { groupId, id } = useParams<{ groupId?: string; id?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { activeGroupId, setActiveGroupId } = useUiStore();
 
   const currentGroupId = groupId || id || activeGroupId || '';
+  const {
+    data: myGroups,
+    isLoading: areMyGroupsLoading,
+    isError: isMyGroupsError,
+    error: myGroupsError,
+    refetch: refetchMyGroups,
+  } = useMyGroups();
   const [copiedCode, setCopiedCode] = useState(false);
   const [activeTab, setActiveTab] = useState<'ledger' | 'rotation' | 'members' | 'info'>('ledger');
   const [showDemoPanel, setShowDemoPanel] = useState(false);
@@ -90,21 +98,46 @@ export const GroupDashboard: React.FC = () => {
   // State: No Group Selected or in Route
   if (!currentGroupId) {
     return (
-      <div className="py-12 space-y-4">
-        <EmptyState
-          title="No Stokvel Selected"
-          description="Please select a Stokvel group or join one to view its live ledger."
-          actionLabel="Join a Stokvel"
-          onAction={() => navigate('/join')}
-        />
-        <div className="text-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/create')}
-            leftIcon={<PlusCircle className="w-4 h-4" />}
-            label="Create New Stokvel"
-          />
+      <div className="py-6 space-y-5">
+        <section className="space-y-3">
+          <div className="px-1">
+            <h1 className="text-xl font-black text-mtn-cream">My Stokvels</h1>
+            <p className="text-xs text-mtn-cream-secondary">Private to your account</p>
+          </div>
+          {areMyGroupsLoading ? (
+            <div className="py-6"><LoadingSpinner label="Loading your groups..." /></div>
+          ) : isMyGroupsError ? (
+            <ErrorState
+              title="Unable to Load Your Stokvels"
+              error={myGroupsError}
+              onRetry={() => refetchMyGroups()}
+            />
+          ) : myGroups?.length ? (
+            <div className="space-y-2">
+              {myGroups.map((memberGroup) => (
+                <button
+                  key={memberGroup.id}
+                  type="button"
+                  onClick={() => { setActiveGroupId(memberGroup.id); navigate(`/group/${memberGroup.id}`); }}
+                  className="w-full rounded-xl border border-mtn-border bg-mtn-surface p-4 text-left hover:border-mtn-gold/50 transition-colors"
+                >
+                  <p className="font-bold text-mtn-cream">{memberGroup.name}</p>
+                  <p className="mt-1 text-xs text-mtn-cream-secondary">R{memberGroup.contributionAmount} · {memberGroup.frequency} · {memberGroup.members.length} members</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <Card variant="default" className="p-4 text-sm text-mtn-cream-secondary">You are not linked to a stokvel yet. Create one or join with an invite code.</Card>
+          )}
+          {location.state?.membershipNotice && (
+            <Card variant="default" className="border-mtn-gold/40 p-4 text-sm text-mtn-cream-secondary">
+              {location.state.membershipNotice}
+            </Card>
+          )}
+        </section>
+        <div className="flex justify-center gap-3">
+          <Button variant="secondary" onClick={() => navigate('/join')} label="Join a Stokvel" />
+          <Button variant="outline" onClick={() => navigate('/create')} leftIcon={<PlusCircle className="w-4 h-4" />} label="Create New Stokvel" />
         </div>
       </div>
     );

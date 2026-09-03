@@ -96,7 +96,15 @@ export const JoinGroup: React.FC = () => {
         // Navigate directly to the real group dashboard
         navigate(`/group/${joinedGroup.id}`);
       },
-      onError: () => {
+      onError: (error) => {
+        if (error.statusCode === 409) {
+          setActiveGroupId(null);
+          navigate('/groups', {
+            replace: true,
+            state: { membershipNotice: 'You are already a member of this Stokvel. Select it from your groups below.' },
+          });
+          return;
+        }
         // Return to form view on error with inputs preserved
         setIsConfirming(false);
       },

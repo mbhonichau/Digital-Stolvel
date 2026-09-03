@@ -31,7 +31,14 @@ export const AuthPage: React.FC = () => {
       setAuth(response.data.token, response.data.user);
       navigate('/home', { replace: true });
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Unable to continue.');
+      const message =
+        typeof requestError === 'object' &&
+        requestError !== null &&
+        'message' in requestError &&
+        typeof requestError.message === 'string'
+          ? requestError.message
+          : 'Unable to continue.';
+      setError(message);
     } finally { setIsSubmitting(false); }
   };
 

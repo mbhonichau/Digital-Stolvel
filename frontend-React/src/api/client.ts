@@ -34,16 +34,21 @@ apiClient.interceptors.request.use(
 // Response Interceptor: Format errors consistently for the application
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<{ message?: string; error?: string; code?: string; details?: Record<string, string[]> }>) => {
+  (error: AxiosError<{ message?: string; error?: string; code?: string; details?: Record<string, string[]>; fieldErrors?: Record<string, string> }>) => {
+    const fieldErrors = error.response?.data?.fieldErrors;
+    const fieldErrorMessage = fieldErrors
+      ? Object.values(fieldErrors).join(' ')
+      : undefined;
     const formattedError: ApiError = {
       message:
+        fieldErrorMessage ||
         error.response?.data?.message ||
         error.response?.data?.error ||
         error.message ||
         'An unexpected network error occurred. Please check your connection to the server.',
       statusCode: error.response?.status,
       code: error.response?.data?.code || error.code,
-      details: error.response?.data?.details,
+      details: error.response?.data?.details || fieldErrors,
       timestamp: new Date().toISOString(),
     };
 

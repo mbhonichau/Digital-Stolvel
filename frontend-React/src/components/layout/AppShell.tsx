@@ -1,9 +1,11 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { HexBackground } from './HexBackground';
 import { HexBadge } from '../ui/HexBadge';
-import { useUiStore } from '@/store';
-import { Home, Users, PiggyBank, History, Sparkles } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { useAuthStore, useUiStore } from '@/store';
+import apiClient from '@/api/client';
+import { Home, Users, PiggyBank, History, LogOut, Sparkles } from 'lucide-react';
 
 export interface AppShellProps {
   children: React.ReactNode;
@@ -15,7 +17,18 @@ export interface AppShellProps {
  */
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { activeGroupId } = useUiStore();
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+
+  const logout = async () => {
+    try {
+      await apiClient.post('/auth/logout');
+    } finally {
+      clearAuth();
+      navigate('/', { replace: true });
+    }
+  };
 
   const navItems = [
     { label: 'Home', path: '/', icon: Home },
@@ -51,6 +64,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <HexBadge variant="green" size="sm" icon={<Sparkles className="w-3 h-3 text-mtn-green" />}>
               Live REST
             </HexBadge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={logout}
+              leftIcon={<LogOut className="w-4 h-4" />}
+              label="Log out"
+            />
           </div>
         </header>
 

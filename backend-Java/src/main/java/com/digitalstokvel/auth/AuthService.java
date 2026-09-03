@@ -26,6 +26,12 @@ public class AuthService {
         if (!passwordEncoder.matches(password, user.getPasswordHash())) throw new BusinessException("INVALID_CREDENTIALS", "Invalid phone number or password");
         return authenticate(user);
     }
+    public void logout(AppUser user) {
+        users.findById(user.getId()).ifPresent(account -> {
+            account.clearSession();
+            users.save(account);
+        });
+    }
     private AuthController.AuthResponse authenticate(AppUser user) {
         String token = UUID.randomUUID().toString();
         user.setSession(token, Instant.now().plus(24, ChronoUnit.HOURS));

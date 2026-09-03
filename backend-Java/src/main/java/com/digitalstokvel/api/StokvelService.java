@@ -1,6 +1,8 @@
 package com.digitalstokvel.api;
 
 import com.digitalstokvel.api.dto.ApiDtos.*;
+import com.digitalstokvel.auth.CurrentUser;
+import com.digitalstokvel.auth.entity.AppUser;
 import com.digitalstokvel.common.exception.*;
 import com.digitalstokvel.contribution.entity.*;
 import com.digitalstokvel.contribution.repository.ContributionRepository;
@@ -32,11 +34,12 @@ public class StokvelService {
     private final ContributionRepository contributions;
     private final PayoutRepository payouts;
     private final MoMoService momo;
+    private final CurrentUser currentUser;
 
     public StokvelService(GroupRepository groups, GroupMemberRepository groupMembers,
                           MemberRepository members, CycleRepository cycles,
                           ContributionRepository contributions, PayoutRepository payouts,
-                          MoMoService momo) {
+                          MoMoService momo, CurrentUser currentUser) {
         this.groups = groups;
         this.groupMembers = groupMembers;
         this.members = members;
@@ -44,18 +47,17 @@ public class StokvelService {
         this.contributions = contributions;
         this.payouts = payouts;
         this.momo = momo;
+        this.currentUser = currentUser;
     }
 
     public GroupResponse createGroup(CreateGroupRequest request) {
+        AppUser user = currentUser.require();
         Group group = new Group(request.name(), null, GroupType.ROTATING,
                 request.contributionAmount(), parseFrequency(request.frequency()),
                 request.maxMembers() == null ? 20 : request.maxMembers());
         group.setStartDate(request.startDate());
         group = groups.save(group);
-        if (hasCreator(request)) {
-            groupMembers.save(new GroupMember(group,
-                    member(request.creatorMsisdn(), request.creatorDisplayName()), GroupRole.ADMIN, 1));
-        }
+        groupMembers.save(new GroupMember(group, member(user.getMsisdn(), user.getDisplayName()), GroupRole.ADMIN, 1));
         createInitialCycle(group);
         return groupResponse(group);
     }
@@ -65,12 +67,12 @@ public class StokvelService {
         if (request.inviteCode() != null && !group.getInviteCode().equalsIgnoreCase(request.inviteCode())) {
             throw new BusinessException("INVALID_INVITE", "Invite code does not match this group");
         }
-        return join(group, request);
+        return join(group, currentUser.require());
     }
 
     public GroupResponse addMember(UUID groupId, AddGroupMemberRequest request) {
         Group group = group(groupId);
-        requireAdmin(group, request.adminMsisdn());
+        requireAdmin(group);
         return join(group, new JoinGroupRequest(null, request.msisdn(), request.displayName()));
     }
 
@@ -80,21 +82,33 @@ public class StokvelService {
         }
         Group group = groups.findByInviteCode(request.inviteCode()).orElseThrow(
                 () -> new ResourceNotFoundException("Group", "invite code", request.inviteCode()));
-        return join(group, request);
+        return join(group, currentUser.require());
     }
 
     @Transactional(readOnly = true)
-    public GroupResponse getGroup(UUID id) { return groupResponse(group(id)); }
+    public List<GroupResponse> myGroups() {
+        AppUser user = currentUser.require();
+        return members.findByPhoneNumber(user.getMsisdn())
+                .map(member -> groupMembers.findByMemberId(member.getId()).stream()
+                        .map(GroupMember::getGroup)
+                        .sorted(Comparator.comparing(Group::getCreatedAt).reversed())
+                        .map(this::groupResponse)
+                        .toList())
+                .orElseGet(List::of);
+    }
+
+    @Transactional(readOnly = true)
+    public GroupResponse getGroup(UUID id) { Group group = group(id); requireMember(group); return groupResponse(group); }
 
     @Transactional(readOnly = true)
     public List<CycleResponse> cycles(UUID groupId) {
-        group(groupId);
+        requireMember(group(groupId));
         return cycles.findByGroupIdOrderByCycleNumberAsc(groupId).stream().map(this::cycleResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<CycleHistoryResponse> history(UUID groupId) {
-        group(groupId);
+        requireMember(group(groupId));
         return cycles.findByGroupIdOrderByCycleNumberAsc(groupId).stream()
                 .map(cycle -> new CycleHistoryResponse(cycle.getCycleNumber(), cycle.getEndDate(),
                         totalPaidFor(cycle), payoutRecipientFor(cycle),
@@ -104,6 +118,7 @@ public class StokvelService {
 
     public CycleResponse createCycle(CreateCycleRequest request) {
         Group group = group(request.groupId());
+        requireAdmin(group);
         Optional<Cycle> activeCycle = cycles.findByGroupIdAndStatus(group.getId(), CycleStatus.ACTIVE).stream().findFirst();
         if (activeCycle.isPresent()) return cycleResponse(activeCycle.get());
         int number = cycles.findByGroupIdOrderByCycleNumberAsc(group.getId()).stream()
@@ -113,8 +128,12 @@ public class StokvelService {
 
     public ContributionStatusResponse contribute(TriggerContributionRequest request) {
         Cycle cycle = cycle(request.cycleId());
+        requireMember(cycle.getGroup());
         Member member = members.findById(request.memberId())
                 .orElseThrow(() -> new ResourceNotFoundException("Member", "id", request.memberId()));
+        if (!member.getPhoneNumber().equals(currentUser.require().getMsisdn())) {
+            throw new BusinessException("FORBIDDEN", "A contribution can only be created for the signed-in member");
+        }
         if (!groupMembers.existsByGroupIdAndMemberId(cycle.getGroup().getId(), member.getId())) {
             throw new BusinessException("Member does not belong to the cycle group");
         }
@@ -133,21 +152,24 @@ public class StokvelService {
 
     @Transactional(readOnly = true)
     public List<ContributionStatusResponse> contributions(UUID cycleId) {
-        cycle(cycleId);
+        Cycle cycle = cycle(cycleId);
+        requireMember(cycle.getGroup());
         return contributions.findByCycleId(cycleId).stream().map(this::contributionResponse).toList();
     }
 
     public ContributionStatusResponse refresh(UUID id) {
         Contribution contribution = contribution(id);
+        requireContributionOwner(contribution);
         updateContribution(contribution);
         return contributionResponse(contribution);
     }
 
     @Transactional(readOnly = true)
-    public ContributionStatusResponse contributionStatus(UUID id) { return contributionResponse(contribution(id)); }
+    public ContributionStatusResponse contributionStatus(UUID id) { Contribution contribution = contribution(id); requireContributionOwner(contribution); return contributionResponse(contribution); }
 
     public TriggerPayoutResponse payout(TriggerPayoutRequest request) {
         Cycle cycle = cycle(request.cycleId());
+        requireAdmin(cycle.getGroup());
         if (!payouts.findByCycleId(cycle.getId()).isEmpty()) throw new ConflictException("A payout already exists for this cycle");
         List<GroupMember> ordered = groupMembers.findByGroupId(cycle.getGroup().getId()).stream()
                 .sorted(Comparator.comparing(GroupMember::getPayoutOrder)).toList();
@@ -171,7 +193,9 @@ public class StokvelService {
 
     @Transactional(readOnly = true)
     public TriggerPayoutResponse payoutStatus(UUID id) {
-        return payoutResponse(payouts.findById(id).orElseThrow(() -> new ResourceNotFoundException("Payout", "id", id)));
+        Payout payout = payouts.findById(id).orElseThrow(() -> new ResourceNotFoundException("Payout", "id", id));
+        requireMember(payout.getCycle().getGroup());
+        return payoutResponse(payout);
     }
 
     private GroupResponse join(Group group, JoinGroupRequest request) {
@@ -185,13 +209,33 @@ public class StokvelService {
         return groupResponse(group);
     }
 
-    private void requireAdmin(Group group, String adminMsisdn) {
-        Member admin = members.findByPhoneNumber(adminMsisdn)
-                .orElseThrow(() -> new BusinessException("ADMIN_REQUIRED", "Only the group creator can add members"));
+    private GroupResponse join(Group group, AppUser user) {
+        return join(group, new JoinGroupRequest(null, user.getMsisdn(), user.getDisplayName()));
+    }
+
+    private void requireAdmin(Group group) {
+        Member admin = requireMember(group);
         boolean isAdmin = groupMembers.findByGroupIdAndMemberId(group.getId(), admin.getId())
                 .map(groupMember -> groupMember.getRole() == GroupRole.ADMIN)
                 .orElse(false);
         if (!isAdmin) throw new BusinessException("ADMIN_REQUIRED", "Only the group creator can add members");
+    }
+
+    private Member requireMember(Group group) {
+        String msisdn = currentUser.require().getMsisdn();
+        Member member = members.findByPhoneNumber(msisdn)
+                .orElseThrow(() -> new BusinessException("FORBIDDEN", "The signed-in user is not a member of this group"));
+        if (!groupMembers.existsByGroupIdAndMemberId(group.getId(), member.getId())) {
+            throw new BusinessException("FORBIDDEN", "The signed-in user is not a member of this group");
+        }
+        return member;
+    }
+
+    private void requireContributionOwner(Contribution contribution) {
+        Member member = requireMember(contribution.getCycle().getGroup());
+        if (!member.getId().equals(contribution.getMember().getId())) {
+            throw new BusinessException("FORBIDDEN", "Only the contribution owner can view or refresh it");
+        }
     }
 
     private void updateContribution(Contribution contribution) {
@@ -215,10 +259,6 @@ public class StokvelService {
         payouts.save(payout);
     }
 
-    private boolean hasCreator(CreateGroupRequest request) {
-        return request.creatorMsisdn() != null && !request.creatorMsisdn().isBlank()
-                && request.creatorDisplayName() != null && !request.creatorDisplayName().isBlank();
-    }
     private void createInitialCycle(Group group) {
         if (cycles.findByGroupIdAndStatus(group.getId(), CycleStatus.ACTIVE).isEmpty()) {
             createCycle(group, 1, group.getStartDate());

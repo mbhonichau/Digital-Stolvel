@@ -26,7 +26,7 @@ export const HomePage: React.FC = () => {
           MTN MoMo Stokvel Mini App
         </h1>
         <p className="text-sm text-mtn-cream-secondary mt-2 max-w-xl leading-relaxed">
-          High-performance fintech mini app styled with the Mzansi Futurism design system, decoupled generic UI components, and zero mock data.
+          High-performance fintech mini app styled with the Africa Futurism design system, decoupled generic UI components, and zero mock data.
         </p>
       </Card>
 
@@ -53,7 +53,7 @@ export const HomePage: React.FC = () => {
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-mtn-green shrink-0" />
-              <span>Mzansi Futurism design tokens (no raw hex styling)</span>
+              <span>Africa Futurism design tokens (no raw hex styling)</span>
             </li>
           </ul>
         </Card>

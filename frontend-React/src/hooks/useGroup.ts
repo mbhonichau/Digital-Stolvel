@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { addGroupMember, createGroup, getGroup, joinGroup, joinGroupByInviteCode } from '@/api/groups';
+import { addGroupMember, createGroup, getGroup, getMyGroups, joinGroup, joinGroupByInviteCode } from '@/api/groups';
 import type { AddGroupMemberRequest, CreateGroupRequest, GroupResponse, JoinGroupRequest, ApiError } from '@/types';
 
 export const GROUP_QUERY_KEYS = {
@@ -21,6 +21,14 @@ export function useGroup(groupId?: string) {
       return getGroup(groupId);
     },
     enabled: Boolean(groupId),
+  });
+}
+
+/** Fetches groups scoped to the authenticated user. */
+export function useMyGroups() {
+  return useQuery<GroupResponse[], ApiError>({
+    queryKey: GROUP_QUERY_KEYS.all,
+    queryFn: getMyGroups,
   });
 }
 
