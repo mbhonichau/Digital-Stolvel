@@ -1,22 +1,24 @@
 /**
- * Mzansi Futurism Design System Tokens
- * Centralized color palette and visual tokens for MTN MoMo Stokvel.
+ * MTN MoMo Design System Tokens.
+ * The core palette follows the supplied brand swatches: MoMo Blue (#004F71),
+ * MTN Sunshine (#FFCB05), and white (#FFFFFF).
  */
 
 export const tokens = {
   colors: {
-    // Base Canvas & Surface
+    // MoMo Blue surfaces. Darker shades preserve readable white type while
+    // keeping the product unmistakably within the supplied blue family.
     base: {
-      dark: '#0B0B0C',
-      surface: '#131316',
-      card: '#1A1A1F',
-      border: '#292933',
+      dark: '#004F71',
+      surface: '#00445F',
+      card: '#003B55',
+      border: '#2E718D',
     },
-    // Primary Brand Gold
+    // MTN Sunshine
     primary: {
-      DEFAULT: '#FFB612',
-      hover: '#E5A20C',
-      muted: '#FFB61220',
+      DEFAULT: '#FFCB05',
+      hover: '#E6B705',
+      muted: '#FFCB0526',
     },
     // Status Success Green
     success: {
@@ -30,17 +32,17 @@ export const tokens = {
       hover: '#C52E28',
       muted: '#DE383120',
     },
-    // Tertiary Deep Blue
+    // MoMo Blue
     tertiary: {
-      DEFAULT: '#002395',
-      hover: '#001D7C',
-      muted: '#00239520',
+      DEFAULT: '#004F71',
+      hover: '#003B55',
+      muted: '#004F7126',
     },
-    // Primary Typography Cream
+    // White brand type
     text: {
-      DEFAULT: '#F5F1E8',
-      secondary: '#AFA99E',
-      muted: '#6F6B64',
+      DEFAULT: '#FFFFFF',
+      secondary: '#D8E8EE',
+      muted: '#9FC2D0',
     },
   },
 } as const;

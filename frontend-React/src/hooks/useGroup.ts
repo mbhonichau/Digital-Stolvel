@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createGroup, getGroup, joinGroup, joinGroupByInviteCode } from '@/api/groups';
-import type { CreateGroupRequest, GroupResponse, JoinGroupRequest, ApiError } from '@/types';
+import { addGroupMember, createGroup, getGroup, joinGroup, joinGroupByInviteCode } from '@/api/groups';
+import type { AddGroupMemberRequest, CreateGroupRequest, GroupResponse, JoinGroupRequest, ApiError } from '@/types';
 
 export const GROUP_QUERY_KEYS = {
   all: ['groups'] as const,
@@ -57,6 +57,17 @@ export function useJoinGroup() {
     onSuccess: (updatedGroup) => {
       queryClient.setQueryData(GROUP_QUERY_KEYS.detail(updatedGroup.id), updatedGroup);
       queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.all });
+    },
+  });
+}
+
+/** Adds a member after the backend verifies the caller is the group administrator. */
+export function useAddGroupMember() {
+  const queryClient = useQueryClient();
+  return useMutation<GroupResponse, ApiError, { groupId: string; request: AddGroupMemberRequest }>({
+    mutationFn: ({ groupId, request }) => addGroupMember(groupId, request),
+    onSuccess: (updatedGroup) => {
+      queryClient.setQueryData(GROUP_QUERY_KEYS.detail(updatedGroup.id), updatedGroup);
     },
   });
 }

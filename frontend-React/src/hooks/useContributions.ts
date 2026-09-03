@@ -1,16 +1,29 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getContributions, triggerContribution, getContributionStatus } from '@/api/contributions';
+import { getContributions, getGroupCycles, triggerContribution, getContributionStatus } from '@/api/contributions';
 import type {
   ContributionStatus,
   TriggerContributionRequest,
   ApiError,
+  CycleResponse,
 } from '@/types';
 
 export const CONTRIBUTION_QUERY_KEYS = {
   all: ['contributions'] as const,
   byCycle: (cycleId: string) => ['contributions', 'cycle', cycleId] as const,
   detail: (id: string) => ['contributions', 'detail', id] as const,
+  groupCycles: (groupId: string) => ['groups', groupId, 'cycles'] as const,
 };
+
+export function useGroupCycles(groupId?: string) {
+  return useQuery<CycleResponse[], ApiError>({
+    queryKey: CONTRIBUTION_QUERY_KEYS.groupCycles(groupId || ''),
+    queryFn: () => {
+      if (!groupId) throw new Error('Group ID is required to fetch cycles');
+      return getGroupCycles(groupId);
+    },
+    enabled: Boolean(groupId),
+  });
+}
 
 /**
  * Hook to retrieve all contribution records for a specific cycle.

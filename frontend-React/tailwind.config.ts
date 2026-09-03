@@ -6,14 +6,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Mzansi Futurism Theme Tokens
-        'mtn-base': tokens.colors.base.dark, // #0B0B0C
-        'mtn-surface': tokens.colors.base.surface, // #131316
-        'mtn-card': tokens.colors.base.card, // #1A1A1F
-        'mtn-border': tokens.colors.base.border, // #292933
+        // MTN MoMo brand tokens: MoMo Blue, MTN Sunshine and white.
+        'mtn-base': tokens.colors.base.dark, // #004F71
+        'mtn-surface': tokens.colors.base.surface, // #00445F
+        'mtn-card': tokens.colors.base.card, // #003B55
+        'mtn-border': tokens.colors.base.border, // #2E718D
         'mtn-gold': {
-          DEFAULT: tokens.colors.primary.DEFAULT, // #FFB612
-          hover: tokens.colors.primary.hover, // #E5A20C
+          DEFAULT: tokens.colors.primary.DEFAULT, // #FFCB05
+          hover: tokens.colors.primary.hover, // #E6B705
           muted: tokens.colors.primary.muted,
         },
         'mtn-green': {
@@ -27,17 +27,17 @@ const config: Config = {
           muted: tokens.colors.failure.muted,
         },
         'mtn-blue': {
-          DEFAULT: tokens.colors.tertiary.DEFAULT, // #002395
+          DEFAULT: tokens.colors.tertiary.DEFAULT, // #004F71
           hover: tokens.colors.tertiary.hover,
           muted: tokens.colors.tertiary.muted,
         },
         'mtn-cream': {
-          DEFAULT: tokens.colors.text.DEFAULT, // #F5F1E8
+          DEFAULT: tokens.colors.text.DEFAULT, // #FFFFFF
           secondary: tokens.colors.text.secondary,
           muted: tokens.colors.text.muted,
         },
 
-        // Direct Mzansi Aliases
+        // Direct MoMo aliases
         mzansi: {
           base: tokens.colors.base.dark,
           surface: tokens.colors.base.surface,

@@ -7,3 +7,4 @@ export * from './GroupHistory';
 export * from './ContributionsPage';
 export * from './HomePage';
 export * from './NotFoundPage';
+export * from './AuthPage';

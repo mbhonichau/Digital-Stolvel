@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
 import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 public class MoMoConfig {
@@ -34,6 +35,12 @@ public class MoMoConfig {
     @Value("${momo.disbursement.api-key}")
     private String disbursementApiKey;
 
+    @Value("${momo.mock-mode}")
+    private boolean mockMode;
+
+    @Value("${momo.currency}")
+    private String currency;
+
     public String getBaseUrl() {
         return baseUrl;
     }
@@ -49,15 +56,17 @@ public class MoMoConfig {
     public String getDisbursementSubscriptionKey() {
         return disbursementSubscriptionKey;
     }
+    public boolean isMockMode() { return mockMode; }
+    public String getCurrency() { return currency; }
 
     public String getCollectionBasicAuth() {
         String credentials = collectionApiUser + ":" + collectionApiKey;
-        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
     }
 
     public String getDisbursementBasicAuth() {
         String credentials = disbursementApiUser + ":" + disbursementApiKey;
-        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
     }
 
     @Bean

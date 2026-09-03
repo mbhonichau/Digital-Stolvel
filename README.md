@@ -94,6 +94,12 @@ cp .env.example .env
 ./mvnw spring-boot:run
 ```
 
+The backend defaults to safe MoMo mock mode. To use the MTN sandbox, copy
+`backend-Java/.env.example` to the gitignored `backend-Java/.env.local`, source
+it in your shell, add the supplied credentials, and set `MOMO_MOCK_MODE=false`.
+Pending contributions and payouts are polled every five seconds by default; no
+public callback URL is required.
+
 ---
 
 ## 📜 License

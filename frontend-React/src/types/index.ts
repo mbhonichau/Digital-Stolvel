@@ -24,6 +24,14 @@ export interface CreateGroupRequest {
   contributionAmount: number;
   frequency: 'weekly' | 'monthly';
   startDate: string;
+  creatorMsisdn: string;
+  creatorDisplayName: string;
+}
+
+export interface AddGroupMemberRequest {
+  adminMsisdn: string;
+  msisdn: string;
+  displayName: string;
 }
 
 export interface MemberSummary {
@@ -62,6 +70,14 @@ export interface ContributionStatus {
   status: 'pending' | 'paid' | 'failed';
   paidAt: string | null;
   momoReference: string | null;
+}
+
+export interface CycleResponse {
+  id: string;
+  groupId: string;
+  cycleNumber: number;
+  dueDate: string;
+  status: 'pending' | 'active' | 'completed' | 'cancelled';
 }
 
 export interface TriggerContributionRequest {

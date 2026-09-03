@@ -40,3 +40,15 @@ logging:
     com.digitalstokvel: DEBUG
     org.flywaydb: INFO
     org.hibernate.SQL: INFO
+
+momo:
+  base-url: ${MOMO_BASE_URL:https://sandbox.momoapi.mtn.com}
+  target-environment: ${MOMO_TARGET_ENVIRONMENT:sandbox}
+  collection:
+    subscription-key: ${MOMO_COLLECTION_SUBSCRIPTION_KEY:}
+    api-user: ${MOMO_COLLECTION_API_USER:}
+    api-key: ${MOMO_COLLECTION_API_KEY:}
+  disbursement:
+    subscription-key: ${MOMO_DISBURSEMENT_SUBSCRIPTION_KEY:}
+    api-user: ${MOMO_DISBURSEMENT_API_USER:}
+    api-key: ${MOMO_DISBURSEMENT_API_KEY:}
