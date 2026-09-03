@@ -51,12 +51,21 @@ export const DemoTriggerPanel: React.FC<DemoTriggerPanelProps> = ({
     details: string;
   } | null>(null);
 
-  // Effective cycle ID (defaults to groupId if discrete cycle ID is not provided)
-  const targetCycleId = cycleId || groupId;
+  // IDs used in mutations must be the UUID returned by the cycles API.
+  const targetCycleId = cycleId;
 
   // 1. Simulate Contribution Payment via real backend mutation
   const handleSimulateContribution = () => {
     setBackendFeedback(null);
+
+    if (!targetCycleId) {
+      setBackendFeedback({
+        type: 'error',
+        title: 'Active Cycle Required',
+        details: 'Create or load an active cycle before requesting a contribution.',
+      });
+      return;
+    }
 
     if (!selectedMemberId && members.length > 0) {
       setSelectedMemberId(members[0].id);
@@ -108,6 +117,15 @@ export const DemoTriggerPanel: React.FC<DemoTriggerPanelProps> = ({
   // 2. Simulate Payout Disbursement via real backend mutation
   const handleSimulatePayout = () => {
     setBackendFeedback(null);
+
+    if (!targetCycleId) {
+      setBackendFeedback({
+        type: 'error',
+        title: 'Active Cycle Required',
+        details: 'Create or load an active cycle before requesting a payout.',
+      });
+      return;
+    }
 
     triggerPayoutMutation.mutate(targetCycleId, {
       onSuccess: (data: TriggerPayoutResponse) => {
@@ -199,7 +217,7 @@ export const DemoTriggerPanel: React.FC<DemoTriggerPanelProps> = ({
           size="sm"
           onClick={handleSimulateContribution}
           loading={triggerContributionMutation.isPending}
-          disabled={isPending}
+          disabled={isPending || !targetCycleId}
           leftIcon={<DollarSign className="w-4 h-4" />}
           label="Simulate Contribution"
           className="w-full justify-center text-xs"
@@ -211,7 +229,7 @@ export const DemoTriggerPanel: React.FC<DemoTriggerPanelProps> = ({
           size="sm"
           onClick={handleSimulatePayout}
           loading={triggerPayoutMutation.isPending}
-          disabled={isPending}
+          disabled={isPending || !targetCycleId}
           leftIcon={<Gift className="w-4 h-4" />}
           label="Simulate Payout"
           className="w-full justify-center text-xs"

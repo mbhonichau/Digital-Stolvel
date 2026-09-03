@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGroup, useContributions, useCycleHistory } from '@/hooks';
+import { useAddGroupMember, useGroup, useContributions, useCycleHistory, useGroupCycles } from '@/hooks';
 import { useUiStore } from '@/store';
 import {
   Card,
@@ -10,6 +10,7 @@ import {
   LoadingSpinner,
   ErrorState,
   EmptyState,
+  Input,
   DemoTriggerPanel,
   LedgerTable,
   PayoutRotationBanner,
@@ -42,6 +43,9 @@ export const GroupDashboard: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState(false);
   const [activeTab, setActiveTab] = useState<'ledger' | 'rotation' | 'members' | 'info'>('ledger');
   const [showDemoPanel, setShowDemoPanel] = useState(false);
+  const [memberName, setMemberName] = useState('');
+  const [memberMsisdn, setMemberMsisdn] = useState('');
+  const addMemberMutation = useAddGroupMember();
 
   // Sync activeGroupId in UI store if route ID changed
   React.useEffect(() => {
@@ -59,11 +63,14 @@ export const GroupDashboard: React.FC = () => {
     refetch: refetchGroup,
   } = useGroup(currentGroupId);
 
+  const { data: groupCycles } = useGroupCycles(currentGroupId);
+  const activeCycleId = groupCycles?.find((cycle) => cycle.status === 'active')?.id;
+
   const {
     data: contributions,
     isLoading: isContribLoading,
     refetch: refetchContrib,
-  } = useContributions(currentGroupId);
+  } = useContributions(activeCycleId);
 
   // Real backend cycle history & payout rotation records
   const {
@@ -130,6 +137,20 @@ export const GroupDashboard: React.FC = () => {
 
   // Calculate target rotation pool amount based strictly on members and contribution
   const totalPool = (group.members?.length || 0) * group.contributionAmount;
+  const adminMsisdn = localStorage.getItem(`group_admin_msisdn_${group.id}`);
+  const isGroupAdmin = Boolean(adminMsisdn && group.members.some((member) => member.msisdn === adminMsisdn));
+
+  const handleAddMember = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!adminMsisdn || !memberName.trim() || !memberMsisdn.trim()) return;
+    addMemberMutation.mutate(
+      {
+        groupId: group.id,
+        request: { adminMsisdn, displayName: memberName.trim(), msisdn: memberMsisdn.trim() },
+      },
+      { onSuccess: () => { setMemberName(''); setMemberMsisdn(''); } }
+    );
+  };
 
   // Derive next payout recipient strictly from backend domain cycle records
   const activeCycle: CycleHistory | undefined =
@@ -231,7 +252,7 @@ export const GroupDashboard: React.FC = () => {
       {showDemoPanel && (
         <DemoTriggerPanel
           groupId={currentGroupId}
-          cycleId={activeCycle?.cycleNumber?.toString() || currentGroupId}
+          cycleId={activeCycleId}
           members={group.members}
           className="animate-fade-in"
         />
@@ -395,6 +416,40 @@ export const GroupDashboard: React.FC = () => {
               label="Invite More"
             />
           </div>
+
+          {isGroupAdmin && (
+            <form onSubmit={handleAddMember} className="rounded-xl border border-mtn-border bg-mtn-base p-3 space-y-3">
+              <div>
+                <h3 className="text-xs font-bold text-mtn-cream">Add a member</h3>
+                <p className="text-[11px] text-mtn-cream-secondary">Members are added to the payout rotation in this order.</p>
+              </div>
+              <Input
+                label="Member name"
+                value={memberName}
+                onChange={(event) => setMemberName(event.target.value)}
+                disabled={addMemberMutation.isPending}
+              />
+              <Input
+                label="MTN MoMo phone number"
+                type="tel"
+                value={memberMsisdn}
+                onChange={(event) => setMemberMsisdn(event.target.value)}
+                disabled={addMemberMutation.isPending}
+              />
+              {addMemberMutation.isError && (
+                <p className="text-xs text-mtn-red">{addMemberMutation.error.message}</p>
+              )}
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                loading={addMemberMutation.isPending}
+                disabled={!memberName.trim() || !memberMsisdn.trim() || addMemberMutation.isPending}
+                leftIcon={<PlusCircle className="w-3.5 h-3.5" />}
+                label="Add Member"
+              />
+            </form>
+          )}
 
           <div className="divide-y divide-mtn-border/60">
             {group.members && group.members.length > 0 ? (

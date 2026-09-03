@@ -25,12 +25,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-mtn-base text-mtn-cream flex flex-col relative selection:bg-mtn-gold selection:text-mtn-base overflow-x-hidden">
-      {/* Ambient Geometric Vector Background */}
+    <div className="min-h-screen bg-white text-mtn-cream flex flex-col relative selection:bg-mtn-gold selection:text-mtn-base overflow-x-hidden">
+      {/* Decorative pattern stays outside the application surface. */}
       <HexBackground />
 
       {/* Main Container - Mobile First (375px optimized, max-w-lg centered on desktop) */}
-      <div className="w-full max-w-md md:max-w-lg mx-auto min-h-screen flex flex-col relative z-10 bg-mtn-base/70 border-x border-mtn-border/30 shadow-2xl">
+      <div className="w-full max-w-md md:max-w-lg mx-auto min-h-screen flex flex-col relative z-10 bg-mtn-base border-x border-mtn-border/30 shadow-2xl">
         {/* Sticky Top Header */}
         <header className="sticky top-0 z-40 bg-mtn-surface/90 backdrop-blur-md border-b border-mtn-border px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group touch-target">

@@ -1,11 +1,11 @@
 export const themeColors = {
   brand: {
-    yellow: '#FFCC00',
-    yellowHover: '#E6B800',
-    yellowLight: '#FFF8E1',
-    dark: '#121212',
-    charcoal: '#1E1E1E',
-    surface: '#292929',
+    yellow: '#FFCB05',
+    yellowHover: '#E6B705',
+    yellowLight: '#FFF5C2',
+    dark: '#003B55',
+    charcoal: '#00445F',
+    surface: '#004F71',
     blue: '#004F71',
   },
   status: {
@@ -15,11 +15,11 @@ export const themeColors = {
     info: '#3B82F6',
   },
   neutral: {
-    bg: '#F9FAFB',
+    bg: '#004F71',
     surface: '#FFFFFF',
-    textPrimary: '#111827',
-    textSecondary: '#6B7280',
-    border: '#E5E7EB',
+    textPrimary: '#003B55',
+    textSecondary: '#D8E8EE',
+    border: '#2E718D',
   },
 } as const;
 

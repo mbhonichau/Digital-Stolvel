@@ -15,24 +15,19 @@ export const HexBackground: React.FC<HexBackgroundProps> = ({
 }) => {
   return (
     <div
-      className={`fixed inset-0 pointer-events-none overflow-hidden select-none z-0 bg-mtn-base ${className}`}
+      className={`fixed inset-0 pointer-events-none overflow-hidden select-none z-0 bg-white ${className}`}
       aria-hidden="true"
     >
       {/* Ambient Radial Gradient Glows */}
       {glowIntensity !== 'none' && (
         <>
-          {/* Top-Right Gold Ambient Glow */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-mtn-gold opacity-[0.07] blur-[100px]" />
-          {/* Bottom-Left Blue Ambient Glow */}
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-mtn-blue opacity-[0.10] blur-[100px]" />
-          {/* Subtle Center Highlight */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-mtn-surface opacity-[0.4] blur-[120px]" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-mtn-gold opacity-[0.10] blur-[100px]" />
         </>
       )}
 
       {/* Repeating Pure SVG Hexagonal Mesh Pattern */}
       <svg
-        className="absolute inset-0 w-full h-full opacity-[0.12]"
+        className="absolute inset-0 w-full h-full opacity-[0.28]"
         xmlns="http://www.w3.org/2000/svg"
         width="100%"
         height="100%"
@@ -49,7 +44,7 @@ export const HexBackground: React.FC<HexBackgroundProps> = ({
             <path
               d="M28 0 L56 16.165 L56 48.497 L28 64.662 L0 48.497 L0 16.165 Z"
               fill="none"
-              stroke="#F5F1E8"
+              stroke="#B8C9D1"
               strokeWidth="0.75"
               strokeOpacity="0.4"
             />
@@ -57,7 +52,7 @@ export const HexBackground: React.FC<HexBackgroundProps> = ({
             <path
               d="M28 64.662 L56 80.827 L56 113.159 L28 129.324 L0 113.159 L0 80.827 Z"
               fill="none"
-              stroke="#F5F1E8"
+              stroke="#B8C9D1"
               strokeWidth="0.75"
               strokeOpacity="0.4"
             />
@@ -65,14 +60,14 @@ export const HexBackground: React.FC<HexBackgroundProps> = ({
             <path
               d="M56 32.331 L84 48.496 L84 80.828 L56 96.993 L28 80.828 L28 48.496 Z"
               fill="none"
-              stroke="#FFB612"
+              stroke="#E6B705"
               strokeWidth="0.75"
               strokeOpacity="0.3"
             />
             <path
               d="M0 32.331 L28 48.496 L28 80.828 L0 96.993 L-28 80.828 L-28 48.496 Z"
               fill="none"
-              stroke="#FFB612"
+              stroke="#E6B705"
               strokeWidth="0.75"
               strokeOpacity="0.3"
             />

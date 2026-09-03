@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "\"groups\"")
+@Table(name = "groups")
 public class Group extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 150)

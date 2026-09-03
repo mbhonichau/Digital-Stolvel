@@ -1,9 +1,16 @@
 import apiClient from './client';
 import type {
   ContributionStatus,
+  CycleResponse,
   TriggerContributionRequest,
   CycleHistory,
 } from '@/types';
+
+/** Retrieves the real cycle records for a group. */
+export const getGroupCycles = async (groupId: string): Promise<CycleResponse[]> => {
+  const response = await apiClient.get<CycleResponse[]>(`/groups/${groupId}/cycles`);
+  return response.data;
+};
 
 /**
  * Retrieves contribution status records for a specific cycle.

@@ -22,4 +22,6 @@ public interface MoMoService {
      * Checks the current transaction status from the MoMo API gateway.
      */
     MoMoTransactionStatus getTransactionStatus(String referenceId);
+
+    MoMoTransactionStatus getDisbursementStatus(String referenceId);
 }

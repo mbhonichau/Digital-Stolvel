@@ -14,6 +14,8 @@ export const CreateGroup: React.FC = () => {
   // Form State
   const [name, setName] = useState('');
   const [contributionAmount, setContributionAmount] = useState('');
+  const [creatorDisplayName, setCreatorDisplayName] = useState('');
+  const [creatorMsisdn, setCreatorMsisdn] = useState('');
   const [frequency, setFrequency] = useState<'weekly' | 'monthly'>('monthly');
   const [startDate, setStartDate] = useState(
     new Date().toISOString().split('T')[0]
@@ -23,6 +25,8 @@ export const CreateGroup: React.FC = () => {
   const [errors, setErrors] = useState<{
     name?: string;
     contributionAmount?: string;
+    creatorDisplayName?: string;
+    creatorMsisdn?: string;
     frequency?: string;
     startDate?: string;
   }>({});
@@ -43,6 +47,14 @@ export const CreateGroup: React.FC = () => {
       newErrors.contributionAmount = 'Valid contribution amount is required';
     } else if (amountNum <= 0) {
       newErrors.contributionAmount = 'Contribution amount must be greater than R0';
+    }
+
+    if (!creatorDisplayName.trim()) {
+      newErrors.creatorDisplayName = 'Your name is required';
+    }
+
+    if (!creatorMsisdn.trim()) {
+      newErrors.creatorMsisdn = 'Your MTN MoMo phone number is required';
     }
 
     if (frequency !== 'weekly' && frequency !== 'monthly') {
@@ -76,10 +88,13 @@ export const CreateGroup: React.FC = () => {
       contributionAmount: parseFloat(contributionAmount),
       frequency,
       startDate,
+      creatorDisplayName: creatorDisplayName.trim(),
+      creatorMsisdn: creatorMsisdn.trim(),
     };
 
     createGroupMutation.mutate(payload, {
       onSuccess: (createdGroup) => {
+        localStorage.setItem(`group_admin_msisdn_${createdGroup.id}`, creatorMsisdn.trim());
         // Update UI state with real group ID from backend response
         setActiveGroupId(createdGroup.id);
 
@@ -166,6 +181,33 @@ export const CreateGroup: React.FC = () => {
             error={errors.contributionAmount}
             leftIcon={<DollarSign className="w-4 h-4" />}
             helperText="Amount each member contributes per rotation cycle."
+            disabled={createGroupMutation.isPending}
+          />
+
+          <Input
+            label="Your Name"
+            placeholder="e.g., Thandi Mokoena"
+            value={creatorDisplayName}
+            onChange={(e) => {
+              setCreatorDisplayName(e.target.value);
+              if (errors.creatorDisplayName) setErrors((prev) => ({ ...prev, creatorDisplayName: undefined }));
+            }}
+            error={errors.creatorDisplayName}
+            helperText="You will be registered as this group's administrator."
+            disabled={createGroupMutation.isPending}
+          />
+
+          <Input
+            label="Your MTN MoMo Phone Number"
+            type="tel"
+            placeholder="e.g., 27723143541"
+            value={creatorMsisdn}
+            onChange={(e) => {
+              setCreatorMsisdn(e.target.value);
+              if (errors.creatorMsisdn) setErrors((prev) => ({ ...prev, creatorMsisdn: undefined }));
+            }}
+            error={errors.creatorMsisdn}
+            helperText="Used to verify that only you can add members."
             disabled={createGroupMutation.isPending}
           />
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import {
   Landing,
@@ -11,14 +11,19 @@ import {
   ContributionsPage,
   HomePage,
   NotFoundPage,
+  AuthPage,
 } from '@/pages';
+import { useAuthStore } from '@/store';
 
 export const App: React.FC = () => {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  if (!isAuthenticated) return <Routes><Route path="*" element={<AuthPage />} /></Routes>;
   return (
     <AppShell>
       <Routes>
         {/* Phase 18 Canonical Routes */}
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<Landing />} />
         <Route path="/create" element={<CreateGroup />} />
         <Route path="/invite/:groupId" element={<InviteShare />} />
         <Route path="/join" element={<JoinGroup />} />

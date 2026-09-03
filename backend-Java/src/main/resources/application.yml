@@ -55,17 +55,23 @@ logging:
     org.flywaydb: INFO
     org.hibernate.SQL: INFO
 
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3001}
+
 momo:
-  base-url: https://proxy.momoapi.mtn.com
-  target-environment: mtnsouthafrica
+  base-url: ${MOMO_BASE_URL:https://proxy.momoapi.mtn.com}
+  target-environment: ${MOMO_TARGET_ENV:mtnsouthafrica}
+  currency: ${MOMO_CURRENCY:ZAR}
+  mock-mode: ${MOMO_MOCK_MODE:true}
+  poll-interval-ms: ${MOMO_POLL_INTERVAL_MS:5000}
   collection:
-    subscription-key: dbb663a2429e4d9ca84dbbcbe2bb59e6
-    api-user: c6aa9738-7e6b-4de5-ad8c-947fbdee032f
-    api-key: 07069f088b8c4e48ade327c18289609a
+    subscription-key: ${MOMO_COLLECTIONS_SUBSCRIPTION_KEY:}
+    api-user: ${MOMO_API_USER:}
+    api-key: ${MOMO_API_KEY:}
   disbursement:
-    subscription-key: 5d9c941af2ed4afd95093161e6f9da93
-    api-user: c6aa9738-7e6b-4de5-ad8c-947fbdee032f
-    api-key: 07069f088b8c4e48ade327c18289609a
+    subscription-key: ${MOMO_DISBURSEMENT_SUBSCRIPTION_KEY:}
+    api-user: ${MOMO_API_USER:}
+    api-key: ${MOMO_API_KEY:}
 
 ---
 # PostgreSQL Production / Container profile

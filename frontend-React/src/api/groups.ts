@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { CreateGroupRequest, GroupResponse, JoinGroupRequest } from '@/types';
+import type { AddGroupMemberRequest, CreateGroupRequest, GroupResponse, JoinGroupRequest } from '@/types';
 
 /**
  * Creates a new Stokvel group.
@@ -30,6 +30,15 @@ export const joinGroup = async (
   request: JoinGroupRequest
 ): Promise<GroupResponse> => {
   const response = await apiClient.post<GroupResponse>(`/groups/${id}/join`, request);
+  return response.data;
+};
+
+/** Adds a member on behalf of the group creator. */
+export const addGroupMember = async (
+  id: string,
+  request: AddGroupMemberRequest
+): Promise<GroupResponse> => {
+  const response = await apiClient.post<GroupResponse>(`/groups/${id}/members`, request);
   return response.data;
 };
 

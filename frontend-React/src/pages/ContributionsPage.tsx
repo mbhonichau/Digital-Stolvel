@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGroup, useTriggerContribution } from '@/hooks';
+import { useGroup, useGroupCycles, useTriggerContribution } from '@/hooks';
 import { useUiStore } from '@/store';
 import {
   Card,
@@ -33,6 +33,7 @@ export const ContributionsPage: React.FC = () => {
     error: groupError,
     refetch: refetchGroup,
   } = useGroup(activeGroupId || undefined);
+  const { data: cycles, isLoading: isCyclesLoading, isError: isCyclesError, error: cyclesError, refetch: refetchCycles } = useGroupCycles(activeGroupId || undefined);
 
   const [selectedMemberId, setSelectedMemberId] = useState<string>('');
   const [successStatus, setSuccessStatus] = useState<ContributionStatus | null>(null);
@@ -62,7 +63,7 @@ export const ContributionsPage: React.FC = () => {
   }
 
   // Handle: Loading Group State
-  if (isGroupLoading) {
+  if (isGroupLoading || isCyclesLoading) {
     return (
       <div className="py-16 text-center">
         <LoadingSpinner label="Fetching active Stokvel details..." size="lg" />
@@ -71,13 +72,13 @@ export const ContributionsPage: React.FC = () => {
   }
 
   // Handle: Error Loading Group State
-  if (isGroupError || !group) {
+  if (isGroupError || isCyclesError || !group) {
     return (
       <div className="py-12 space-y-4">
         <ErrorState
           title="Unable to Load Group Information"
-          error={groupError || "We couldn't load the group information. Please try again."}
-          onRetry={() => refetchGroup()}
+          error={groupError || cyclesError || "We couldn't load the group information. Please try again."}
+          onRetry={() => { refetchGroup(); refetchCycles(); }}
         />
         <div className="text-center">
           <Button variant="secondary" onClick={() => navigate('/')} label="Return Home" />
@@ -108,6 +109,11 @@ export const ContributionsPage: React.FC = () => {
   }
 
   const selectedMember = group.members.find((m) => m.id === selectedMemberId) || group.members[0];
+  const activeCycle = cycles?.find((cycle) => cycle.status === 'active');
+
+  if (!activeCycle) {
+    return <EmptyState title="No Active Cycle" description="A cycle must be created before members can contribute." />;
+  }
 
   const handlePayContribution = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -115,7 +121,7 @@ export const ContributionsPage: React.FC = () => {
 
     triggerContributionMutation.mutate(
       {
-        cycleId: group.id,
+        cycleId: activeCycle.id,
         memberId: selectedMember.id,
       },
       {

@@ -24,3 +24,5 @@ hs_err_pid*
 replay_pid*
 frontend-React/package-lock.json
 frontend-React/package.json
+.env.local
+backend-Java/.env.local
