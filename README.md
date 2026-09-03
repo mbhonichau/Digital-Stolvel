@@ -89,7 +89,8 @@ npm run dev
 
 ```bash
 cd backend-Java
-cp .env.example .env.local
+cp .env.example .env
+# Set SUPABASE_PROJECT_REF and SUPABASE_DB_PASSWORD in .env before starting.
 ./mvnw spring-boot:run
 ```
 
